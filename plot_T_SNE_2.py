@@ -6,47 +6,14 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import scipy.io as scio
 from torch.utils.data import DataLoader, TensorDataset
-from inception import InceptionBlock
-from some_block import ResidualBlock, MultiScaleConvBlock
+
 import random
 from matplotlib import cm, colors
 
 class XXG2net(nn.Module):
     def __init__(self):
         super(XXG2net, self).__init__()
-        self.firstconv = nn.Sequential(
-            nn.Conv2d(in_channels=3, out_channels=64, kernel_size=(3, 3), padding='same', bias=False),
-            nn.BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True),
-            nn.ELU(),
-            nn.Dropout(p=0.10)
-        )
-        self.separableconv2 = nn.Sequential(
-            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=(9, 1), stride=(1, 1), groups=64, bias=False)
-        )
-        self.separableconv3 = nn.Sequential(
-            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(1, 5), padding='same', groups=128, bias=False),
-            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(1, 3), padding='same', bias=False),
-            nn.ELU(),
-            nn.Dropout(p=0.95)
-        )
-        # self.self_attention = SelfAttention(in_channels=128)
 
-        # 改进后的多尺度卷积块
-        self.multiscale_block = MultiScaleConvBlock(64, 64)
-        # # 添加残差块
-        self.residual_block = ResidualBlock(64, 64)
-
-        self.multiscale_block1 = MultiScaleConvBlock(64, 128)
-        # # 添加残差块
-        self.residual_block1 = ResidualBlock(128, 128)
-
-        # self.se = SqueezeExcitation(in_channels=128)
-        self.classify = nn.Sequential(
-            # nn.Flatten(),
-            nn.Linear(in_features=128 * 1 * timewindows, out_features=40, bias=True)
-            # nn.Softmax(dim=1)
-        )
-        self.inceptionblock = InceptionBlock(3, 16)
     def forward(self, x):
 
         x1 = self.firstconv(x)
@@ -99,7 +66,7 @@ test_y = torch.tensor(test_y, dtype=torch.long)
 
 test_dataset = TensorDataset(test_x, test_y)
 
-Net = XXG2net()   # EEGNet, EEGTCNet, M_FANet   Mynet1
+Net = XXG2net()   
 Net.load_state_dict(torch.load('model_weights_subject1.pth', weights_only=True))
 Net.to('cpu')
 Net.eval()
@@ -166,5 +133,6 @@ fig.tight_layout()
 plt.legend(fontsize=10, loc='upper right', bbox_to_anchor=(1.3, 1.03), frameon=False)
 # 保存为矢量图格式 (SVG)
 plt.savefig("T-SNE_框架之后.svg", format="svg", dpi=300)
+
 
 plt.show()
